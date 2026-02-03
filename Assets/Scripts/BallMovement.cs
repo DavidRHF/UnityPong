@@ -4,8 +4,34 @@ using UnityEngine;
 
 public class BallMovement : MonoBehaviour
 {
-    // variable declaring
+    // Private fields (encapsulated data)
+    [SerializeField] private float speed = 3f;
+    private Vector2 direction;
     private Rigidbody2D rb;
+
+    // Speed
+    public float Speed
+    {
+        get { return speed; }
+        set
+        {
+            if (value < 0)
+            {
+                speed = 0f;
+            }
+            else
+            {
+                speed = value;
+            }
+        }
+    }
+
+    // Direction
+    public Vector2 Direction
+    {
+        get { return direction; }
+        set { direction = value.normalized; }
+    }
 
     // Start is called before the first frame update
     void Start()
@@ -14,23 +40,31 @@ public class BallMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
 
         // begins movement immediately
-        rb.velocity = new Vector2(3f, 3f);
+        Direction = new Vector2(1f, 1f);
     }
 
-    // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        
+        rb.velocity = direction * speed;
     }
-    /*
+
     void OnCollisionEnter2D(Collision2D collision)
     {
-        Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        Vector2 normal = collision.contacts[0].normal;
+        // Check if a paddle
+        if (collision.gameObject.CompareTag("Paddle"))
+        {
+            // Reverse horizontal direction
+            direction.x = -direction.x;
 
-        // Reflect velocity based on surface angle
-        rb.velocity = Vector2.Reflect(rb.velocity, normal);
+            direction = direction.normalized;
+        }
+        // for walls
+        else
+        {
+            Vector2 normal = collision.contacts[0].normal;
 
+            Direction = Vector2.Reflect(direction, normal);
+        }
     }
-    */
+
 }
