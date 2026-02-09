@@ -2,29 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BallMovement : MonoBehaviour
+public class BallMovement : MonoBehaviour, ICollidable
 {
     // Private fields (encapsulated data)
     [SerializeField] private float speed = 3f;
     private Vector2 direction;
     private Rigidbody2D rb;
-
-    // Speed
-    public float Speed
-    {
-        get { return speed; }
-        set
-        {
-            if (value < 0)
-            {
-                speed = 0f;
-            }
-            else
-            {
-                speed = value;
-            }
-        }
-    }
 
     // Direction
     public Vector2 Direction
@@ -50,21 +33,22 @@ public class BallMovement : MonoBehaviour
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // Check if a paddle
-        if (collision.gameObject.CompareTag("Paddle"))
-        {
-            // Reverse horizontal direction
-            direction.x = -direction.x;
+        //collision handling
+        ICollidable collidable =
+            collision.gameObject.GetComponent<ICollidable>();
 
-            direction = direction.normalized;
-        }
-        // for walls
-        else
+        if (collidable != null)
         {
-            Vector2 normal = collision.contacts[0].normal;
-
-            Direction = Vector2.Reflect(direction, normal);
+            collidable.OnHit(collision);
         }
+
+        //reacts to the collision
+        OnHit(collision);
     }
 
+    public void OnHit(Collision2D collision)
+    {
+        Vector2 normal = collision.contacts[0].normal;
+        Direction = Vector2.Reflect(direction, normal);
+    }
 }
