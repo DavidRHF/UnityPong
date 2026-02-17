@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
-public class BallMovement : MonoBehaviour, ICollidable
+public class BallMovement : NetworkBehaviour, ICollidable
 {
     // Private fields (encapsulated data)
     [SerializeField] private float speed = 3f;
+
     private Vector2 direction;
     private Rigidbody2D rb;
 
@@ -28,6 +30,8 @@ public class BallMovement : MonoBehaviour, ICollidable
 
     void FixedUpdate()
     {
+        if (!IsServer) return;
+
         rb.velocity = direction * speed;
     }
 
@@ -48,7 +52,23 @@ public class BallMovement : MonoBehaviour, ICollidable
 
     public void OnHit(Collision2D collision)
     {
+        StartCoroutine(FlashColor());
         Vector2 normal = collision.contacts[0].normal;
         Direction = Vector2.Reflect(direction, normal);
     }
+    private IEnumerator FlashColor()
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        Color original = sr.color;
+
+        sr.color = Color.yellow;
+        yield return new WaitForSeconds(0.1f);
+        sr.color = original;
+    }
+    /*
+    public override void Initialize()
+    {
+        Debug.Log("Ball initialized for networking.");
+    }
+    */
 }
