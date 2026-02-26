@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - Paddle
+  - Ball
+  - LeftScoreZone
+  - RightScoreZone
   layers:
   - Default
   - TransparentFX

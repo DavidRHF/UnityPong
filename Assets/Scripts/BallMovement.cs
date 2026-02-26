@@ -23,14 +23,14 @@ public class BallMovement : NetworkBehaviour, ICollidable
     {
         // physics components
         rb = GetComponent<Rigidbody2D>();
-
-        // begins movement immediately
-        Direction = new Vector2(1f, 1f);
     }
 
     void FixedUpdate()
     {
         if (!IsServer) return;
+
+        if (GameManager.Instance != null && GameManager.Instance.GameOver.Value)
+            return;
 
         rb.velocity = direction * speed;
     }
@@ -65,10 +65,13 @@ public class BallMovement : NetworkBehaviour, ICollidable
         yield return new WaitForSeconds(0.1f);
         sr.color = original;
     }
-    /*
-    public override void Initialize()
+    public void StopBall()
     {
-        Debug.Log("Ball initialized for networking.");
+        if (rb == null)
+            rb = GetComponent<Rigidbody2D>();
+
+        direction = Vector2.zero;
+        rb.velocity = Vector2.zero;
     }
-    */
 }
+    

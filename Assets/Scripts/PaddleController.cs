@@ -1,48 +1,58 @@
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public abstract class PaddleController : NetworkBehaviour, ICollidable
+public class PaddleController : NetworkBehaviour, ICollidable
 {
-    // Shared movement speed
-    [SerializeField] protected float moveSpeed = 10f;
-    private Vector2 direction;
-    protected Rigidbody2D rb;
+    [SerializeField] private float moveSpeed = 10f;
 
-    private NetworkVariable<float> syncedYPosition =
-        new NetworkVariable<float>(0f);
-    // Called when the object is created
+    private Rigidbody2D rb;
+
     protected virtual void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        direction = new Vector2(1f, 1f).normalized;
+
+        rb.freezeRotation = true;
     }
 
     protected virtual void FixedUpdate()
     {
-        if (IsOwner)
-        {
-            float input = GetInput();
-            rb.velocity = new Vector2(0, input * moveSpeed);
+        if (!IsOwner) return;
 
-            syncedYPosition.Value = rb.position.y;
-        }
-        else
-        {
-            rb.position = new Vector2(
-                rb.position.x,
-                syncedYPosition.Value
-            );
-        }
+        float input = 0f;
+
+        // Use SAME keys for whoever owns this paddle
+        if (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow))
+            input = 1f;
+        else if (Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.DownArrow))
+            input = -1f;
+
+        rb.velocity = new Vector2(0, input * moveSpeed);
     }
 
+    private float GetHostInput()
+    {
+        float move = 0f;
+        if (Input.GetKey(KeyCode.W))
+            move = 1f;
+        else if (Input.GetKey(KeyCode.S))
+            move = -1f;
 
-    protected abstract float GetInput();
+        return move;
+    }
 
-    // ICollidable
+    private float GetClientInput()
+    {
+        float move = 0f;
+        if (Input.GetKey(KeyCode.UpArrow))
+            move = 1f;
+        else if (Input.GetKey(KeyCode.DownArrow))
+            move = -1f;
+
+        return move;
+    }
+
     public virtual void OnHit(Collision2D collision)
     {
-        Debug.Log($"{gameObject.name} was hit by the ball");
+    // ICollidable
     }
 }
